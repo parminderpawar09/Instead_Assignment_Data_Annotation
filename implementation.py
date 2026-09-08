@@ -297,6 +297,8 @@ def render_pdf(annotation_set: dict, data: dict, output_path: str, draw_blueprin
     from reportlab.pdfgen import canvas as pdfcanvas
 
     instructions = build_draw_instructions(annotation_set, data)
+    for instruction in instructions:
+        print(f"Page:{instruction.page} Xpos:{instruction.x} YPos:{instruction.y} Value:{instruction.text} Font:{instruction.font_family} Size:{instruction.font_size}")
     pages_meta = {p["pageNumber"]: (p["width"], p["height"]) for p in annotation_set["pages"]}
     by_page: dict[int, list[DrawInstructions]] = {}
     for instr in instructions:

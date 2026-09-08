@@ -362,11 +362,17 @@
                     "type": "string",
                     "description": "Relative JSON path or computed expresion per array element"
                 },
-                "transform":{
-                    "type":"string",
-                    "enum":["sum","count","boolToYesNo","lastN:4","none"],
-                    "default":"none",
-                    "description":"Applied to array field resolves to within the rows"
+                "transform": {
+                    "type": "string",
+                    "enum": [
+                        "sum",
+                        "count",
+                        "boolToYesNo",
+                        "lastN:4",
+                        "none"
+                    ],
+                    "default": "none",
+                    "description": "Applied to array field resolves to within the rows"
                 },
                 "format": {
                     "$ref": "#/$defination/baseFormat"
