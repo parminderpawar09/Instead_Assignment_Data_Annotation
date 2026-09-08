@@ -1,0 +1,290 @@
+{
+  "taxpayerData": {
+    "filingStatus": "HOH",
+    "taxpayer": { "firstName": "Morgan", "lastName": "Chen", "ssn": "222-33-4444" },
+
+    "dependents": [
+      { "firstName": "Ava",  "lastName": "Chen", "ssn": "555-11-2222", "qualifiesForChildTaxCredit": true },
+      { "firstName": "Leo",  "lastName": "Chen", "ssn": "555-11-3333", "qualifiesForChildTaxCredit": true },
+      { "firstName": "Nina", "lastName": "Chen", "ssn": "555-11-4444", "qualifiesForChildTaxCredit": false }
+    ],
+
+    "income": {
+      "w2": [
+        { "employer": { "name": "Northwind Data", "ein": "11-1111111" }, "box1Wages": 58000.00 }
+      ],
+
+      "selfEmployment": {
+        "businesses": [
+          {
+            "name": "Chen Consulting",
+            "ein": "22-2222222",
+            "invoices": [
+              { "client": "Globex", "amount": 18000.00 },
+              { "client": "Initech", "amount": 9500.00 }
+            ],
+            "expenses": [
+              { "category": "Software", "amount": 2200.00 },
+              { "category": "Travel", "amount": 1350.75 },
+              { "category": "Home office", "amount": 900.00 }
+            ]
+          },
+          {
+            "name": "Chen Design Side-Gig",
+            "ein": "33-3333333",
+            "invoices": [
+              { "client": "Local Bakery", "amount": 2400.00 }
+            ],
+            "expenses": [
+              { "category": "Software", "amount": 240.00 }
+            ]
+          }
+        ]
+      },
+
+      "partnershipK1": [
+        { "entityName": "Riverbend Partners",      "entityType": "partnership", "ordinaryIncome": 6200.00 },
+        { "entityName": "Chen Holdings S-Corp",     "entityType": "sCorp",       "ordinaryIncome": 4100.00 }
+      ],
+
+      "rental": {
+        "properties": [
+          {
+            "address": "14 Birchwood Ln",
+            "rentsReceived": 24000.00,
+            "expenses": [
+              { "category": "Mortgage interest", "amount": 8200.00 },
+              { "category": "Repairs", "amount": 1100.00 },
+              { "category": "Insurance", "amount": 950.00 }
+            ]
+          },
+          {
+            "address": "9 Maple Ct",
+            "rentsReceived": 18000.00,
+            "expenses": [
+              { "category": "Mortgage interest", "amount": 6100.00 },
+              { "category": "Property mgmt", "amount": 1440.00 }
+            ]
+          }
+        ]
+      },
+
+      "foreignAccounts": [
+        { "country": "Canada", "maxValue": 6200.00 },
+        { "country": "UK", "maxValue": 5100.00 }
+      ]
+    }
+  },
+
+  "formAnnotationSet": {
+    "formId": "complex-demo",
+    "taxYear": 2024,
+    "revision": "2024-01",
+    "units": "pt",
+    "pages": [
+      { "pageNumber": 1, "width": 612, "height": 792 },
+      { "pageNumber": 2, "width": 612, "height": 792 }
+    ],
+    "fields": [
+      {
+        "id": "f_taxpayer_name",
+        "label": "Taxpayer name",
+        "lineRef": "Name field",
+        "page": 1,
+        "position": { "x": 54, "y": 96, "width": 260, "height": 14 },
+        "type": "text",
+        "format": { "fontFamily": "Helvetica", "fontSize": 10 },
+        "dataBinding": { "path": "$.taxpayer.firstName + ' ' + $.taxpayer.lastName" }
+      },
+      {
+        "id": "f_se_business_ein_masked",
+        "label": "Primary business EIN, masked for the preparer-facing courtesy copy",
+        "lineRef": "Schedule C header (masked)",
+        "page": 1,
+        "position": { "x": 400, "y": 96, "width": 90, "height": 14 },
+        "type": "ein",
+        "format": { "maskAllButLast4": true, "fontFamily": "Courier", "fontSize": 10 },
+        "dataBinding": { "path": "$.income.selfEmployment.businesses[0].ein" }
+      },
+
+      {
+        "id": "f_se_income_total",
+        "label": "Schedule C gross receipts -- sum across ALL businesses' ALL invoices (2-level wildcard)",
+        "lineRef": "Sch C, Line 1",
+        "page": 1,
+        "position": { "x": 452, "y": 150, "width": 90, "height": 14 },
+        "type": "currency",
+        "format": { "decimalPlaces": 2, "align": "right" },
+        "dataBinding": { "path": "$.income.selfEmployment.businesses[*].invoices[*].amount", "transform": "sum", "fallback": 0 }
+      },
+      {
+        "id": "f_se_expenses_total",
+        "label": "Schedule C total expenses -- sum across ALL businesses' ALL expense line items",
+        "lineRef": "Sch C, Line 28",
+        "page": 1,
+        "position": { "x": 452, "y": 168, "width": 90, "height": 14 },
+        "type": "currency",
+        "format": { "decimalPlaces": 2, "align": "right" },
+        "dataBinding": { "path": "$.income.selfEmployment.businesses[*].expenses[*].amount", "transform": "sum", "fallback": 0 }
+      },
+      {
+        "id": "f_se_net_profit",
+        "label": "Schedule C net profit -- chained compute over the two fields above",
+        "lineRef": "Sch C, Line 31",
+        "page": 1,
+        "position": { "x": 452, "y": 186, "width": 90, "height": 14 },
+        "type": "computed",
+        "format": { "decimalPlaces": 2, "align": "right", "negativeStyle": "parentheses" },
+        "dataBinding": { "computeExpression": "subtract(f_se_income_total, f_se_expenses_total)" }
+      },
+
+      {
+        "id": "f_k1_partnership_income",
+        "label": "Schedule E, Part II -- ordinary income from PARTNERSHIP K-1s only (S-corps reported on a separate line, so this uses a JSONPath filter predicate, not a plain wildcard)",
+        "lineRef": "Sch E, Part II, Col (h), partnerships",
+        "page": 1,
+        "position": { "x": 452, "y": 220, "width": 90, "height": 14 },
+        "type": "currency",
+        "format": { "decimalPlaces": 2, "align": "right" },
+        "dataBinding": { "path": "$.income.partnershipK1[?(@.entityType=='partnership')].ordinaryIncome", "transform": "sum", "fallback": 0 }
+      },
+
+      {
+        "id": "f_rental_income_total",
+        "label": "Helper field: total rents received across all properties (not itself printed as a box on a real form -- feeds the next computed field)",
+        "lineRef": "(internal helper)",
+        "page": 1,
+        "position": { "x": 452, "y": 254, "width": 90, "height": 14 },
+        "type": "currency",
+        "format": { "decimalPlaces": 2, "align": "right" },
+        "dataBinding": { "path": "$.income.rental.properties[*].rentsReceived", "transform": "sum", "fallback": 0 }
+      },
+      {
+        "id": "f_rental_expenses_total",
+        "label": "Helper field: total rental expenses across all properties, all categories (2-level wildcard, same pattern as Schedule C above)",
+        "lineRef": "(internal helper)",
+        "page": 1,
+        "position": { "x": 452, "y": 272, "width": 90, "height": 14 },
+        "type": "currency",
+        "format": { "decimalPlaces": 2, "align": "right" },
+        "dataBinding": { "path": "$.income.rental.properties[*].expenses[*].amount", "transform": "sum", "fallback": 0 }
+      },
+      {
+        "id": "f_rental_net_total",
+        "label": "Schedule E total net rental income -- computed from the two helper fields above",
+        "lineRef": "Sch E, Line 26",
+        "page": 1,
+        "position": { "x": 452, "y": 290, "width": 90, "height": 14 },
+        "type": "computed",
+        "format": { "decimalPlaces": 2, "align": "right", "negativeStyle": "parentheses" },
+        "dataBinding": { "computeExpression": "subtract(f_rental_income_total, f_rental_expenses_total)" }
+      },
+
+      {
+        "id": "f_wages",
+        "label": "1040 Line 1a wages",
+        "lineRef": "1040, Line 1a",
+        "page": 1,
+        "position": { "x": 452, "y": 348, "width": 90, "height": 14 },
+        "type": "currency",
+        "format": { "decimalPlaces": 2, "align": "right" },
+        "dataBinding": { "path": "$.income.w2[*].box1Wages", "transform": "sum", "fallback": 0 }
+      },
+      {
+        "id": "f_total_income_line9",
+        "label": "1040 Line 9: Total income -- a computed field chained on top of THREE other computed/aggregated fields. NOTE: this MUST appear after f_wages, f_se_net_profit, f_k1_partnership_income, and f_rental_net_total in this array -- the reference engine evaluates fields strictly top-to-bottom with no dependency graph, so a computeExpression can only reference fields already resolved earlier in the list. See SPEC.md future enhancements re: a topological-sort upgrade.",
+        "lineRef": "1040, Line 9",
+        "page": 1,
+        "position": { "x": 452, "y": 330, "width": 90, "height": 14 },
+        "type": "computed",
+        "format": { "decimalPlaces": 2, "align": "right", "negativeStyle": "parentheses" },
+        "dataBinding": { "computeExpression": "sum(f_wages, f_se_net_profit, f_k1_partnership_income, f_rental_net_total)" }
+      },
+
+      {
+        "id": "f_foreign_account_flag",
+        "label": "FBAR-style informational checkbox: 'yes' only if the AGGREGATE value of all foreign accounts exceeds $10,000 at any point -- a numeric-threshold condition on a summed nested array, not a per-account check",
+        "lineRef": "Schedule B, Part III, Line 7a",
+        "page": 1,
+        "position": { "x": 452, "y": 380, "width": 12, "height": 12 },
+        "type": "checkbox",
+        "format": { "markGlyph": "X" },
+        "dataBinding": {
+          "path": "$.filingStatus",
+          "condition": "sum($.income.foreignAccounts[*].maxValue) > 10000"
+        }
+      }
+    ],
+
+    "repeatingGroups": [
+      {
+        "id": "dependents_table",
+        "sourcePath": "$.dependents[*]",
+        "page": 1,
+        "rowHeight": 14,
+        "startY": 420,
+        "maxRowsPerPage": 4,
+        "columns": [
+          { "id": "firstName", "x": 60,  "width": 90, "type": "text", "field": "firstName" },
+          { "id": "lastName",  "x": 155, "width": 90, "type": "text", "field": "lastName" },
+          { "id": "ssn",  "x": 230, "width": 90,  "type": "ssn",  "field": "ssn" },
+          {
+            "id": "ctcCheckbox",
+            "x": 330, "width": 12,
+            "type": "checkbox",
+            "field": "qualifiesForChildTaxCredit",
+            "format": { "markGlyph": "X" }
+          }
+        ]
+      },
+      {
+        "id": "rental_properties",
+        "sourcePath": "$.income.rental.properties[*]",
+        "page": 2,
+        "rowHeight": 16,
+        "startY": 200,
+        "maxRowsPerPage": 3,
+        "overflowPage": "sch-e#continuation",
+        "columns": [
+          { "id": "address",        "x": 50,  "width": 160, "type": "text",     "field": "address" },
+          { "id": "rentsReceived",  "x": 220, "width": 80,  "type": "currency", "field": "rentsReceived" },
+          {
+            "id": "expensesTotal",
+            "x": 310, "width": 80, "type": "currency",
+            "field": "expenses[*].amount",
+            "transform": "sum",
+            "_comment": "field is a JSONPath RELATIVE TO THIS ROW, aggregated with transform -- exactly like a top-level dataBinding, just scoped to one array element."
+          },
+          {
+            "id": "netIncome",
+            "x": 400, "width": 80, "type": "currency",
+            "field": "computed:rentsReceived-expensesTotal",
+            "format": { "negativeStyle": "parentheses" },
+            "_comment": "computed columns reference SIBLING COLUMN IDs already resolved earlier in the same row, not a raw data-set path."
+          }
+        ]
+      }
+    ]
+  },
+
+  "resolvedOutput": {
+    "_comment": "What reference_implementation.py actually produces when run against this file -- verified by execution, not hand-typed.",
+    "f_taxpayer_name": "Morgan Chen",
+    "f_se_business_ein_masked": "X X X - X X - 2 2 2 2",
+    "f_se_income_total": "29,900.00",
+    "f_se_expenses_total": "4,690.75",
+    "f_se_net_profit": "25,209.25",
+    "f_k1_partnership_income": "6,200.00",
+    "f_rental_income_total": "42,000.00",
+    "f_rental_expenses_total": "17,790.00",
+    "f_rental_net_total": "24,210.00",
+    "f_wages": "58,000.00",
+    "f_total_income_line9": "113,619.25",
+    "f_foreign_account_flag": "X (11,300.00 aggregate exceeds the 10,000 threshold)",
+    "dependents_table_row0_ctcCheckbox": "X (Ava qualifies)",
+    "dependents_table_row1_ctcCheckbox": "X (Leo qualifies)",
+    "dependents_table_row2_ctcCheckbox": "(blank -- Nina does not qualify, so nothing is printed)",
+    "rental_properties_row0": { "address": "14 Birchwood Ln", "rentsReceived": "24,000.00", "expensesTotal": "10,250.00", "netIncome": "13,750.00" },
+    "rental_properties_row1": { "address": "9 Maple Ct", "rentsReceived": "18,000.00", "expensesTotal": "7,540.00", "netIncome": "10,460.00" }
+  }
+}

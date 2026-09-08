@@ -1,0 +1,421 @@
+{
+    "title": "TaxFormAnnotationSet",
+    "description": "Annotation set describing box posisitons, formating, data bindings for U.S. Tax form revision.",
+    "type": "object",
+    "required": [
+        "formId",
+        "taxYear",
+        "units",
+        "pages",
+        "fields"
+    ],
+    "properties": {
+        "formId": {
+            "type": "string",
+            "description": "Form identifier"
+        },
+        "taxYear": {
+            "type": "integer",
+            "minimum": 1990
+        },
+        "revision": {
+            "type": "string",
+            "description": "IRS Published revision label"
+        },
+        "units": {
+            "type": "string",
+            "enum": [
+                "pt",
+                "in",
+                "mm"
+            ],
+            "default": "pt"
+        },
+        "pages": {
+            "type": "array",
+            "minItem": 1,
+            "items": {
+                "type": "object",
+                "required": [
+                    "pageNumber",
+                    "width",
+                    "height"
+                ],
+                "properties": {
+                    "pageNumber": {
+                        "type": "integer",
+                        "minimum": 0
+                    },
+                    "width": {
+                        "type": "number",
+                        "exclusiveMinimum": 0
+                    },
+                    "height": {
+                        "type": "number",
+                        "exclusiveMinimum": 0
+                    }
+                }
+            },
+            "fields": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/$defination/fieldAnnotation"
+                }
+            },
+            "repeatingGroups": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/$defination/repeatingFieldGroup"
+                }
+            }
+        }
+    },
+    "$defination": {
+        "posisiton": {
+            "type": "object",
+            "required": [
+                "x",
+                "y",
+                "width",
+                "height"
+            ],
+            "properties": {
+                "x": {
+                    "type": "number"
+                },
+                "y": {
+                    "type": "number"
+                },
+                "width": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                },
+                "height": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                }
+            }
+        },
+        "dataBinding": {
+            "type": "object",
+            "description": "Only 1 path or compute expression must be present",
+            "properties": {
+                "path": {
+                    "type": "string",
+                    "description": "JSON expression resolved against the taxpayer document (RFC 9535)"
+                },
+                "fallback": {
+                    "type": [
+                        "string",
+                        "number",
+                        "boolean",
+                        "null"
+                    ],
+                    "description": "Value used when invalid path/ expression is provided"
+                },
+                "compute": {
+                    "type": "string",
+                    "enum": [
+                        "sum",
+                        "count",
+                        "boolToYesNo",
+                        "lastN:4",
+                        "concat",
+                        "none"
+                    ],
+                    "default": "none"
+                },
+                "condition": {
+                    "type": "string",
+                    "description": "Boolean gaurd combining clauses with && / ||, field is skipped entirely if false"
+                },
+                "computeExpression": {
+                    "type": "string",
+                    "describing": "Valid grammar refrencing other fields"
+                }
+            },
+            "oneOf": [
+                {
+                    "required": [
+                        "path"
+                    ]
+                },
+                {
+                    "required": [
+                        "computeExpression"
+                    ]
+                }
+            ]
+        },
+        "validation": {
+            "type": "object",
+            "properties": {
+                "required": {
+                    "type": "boolean",
+                    "default": "false"
+                },
+                "pattern": {
+                    "type": "string",
+                    "description": "Optional regex, the raw value should match"
+                }
+            }
+        },
+        "baseFormat": {
+            "type": "object",
+            "properties": {
+                "fontFamily": {
+                    "type": "string",
+                    "default": "Helvetica"
+                },
+                "fontSize": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                },
+                "color": {
+                    "type": "string",
+                    "description": "Hex color code",
+                    "default": "#000000"
+                },
+                "align": {
+                    "type": "string",
+                    "enum": [
+                        "left",
+                        "right",
+                        "center"
+                    ],
+                    "default": "left"
+                }
+            }
+        },
+        "fieldAnnotation": {
+            "type": "object",
+            "required": [
+                "id",
+                "page",
+                "type",
+                "dataBinding"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "lineRef": {
+                    "type": "string"
+                },
+                "page": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "posistion": {
+                    "$ref": "#/$defination/posisiton"
+                },
+                "anchor": {
+                    "type": "string",
+                    "enum": [
+                        "top-left",
+                        "bottom-left",
+                        "center"
+                    ],
+                    "default": "bottom-left"
+                },
+                "rotationDegrees": {
+                    "type": "number",
+                    "default": 0
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "text",
+                        "multiLineText",
+                        "integer",
+                        "currency",
+                        "percentage",
+                        "date",
+                        "checkbox",
+                        "characterGrid",
+                        "ssn",
+                        "ein",
+                        "signature",
+                        "computed"
+                    ]
+                },
+                "format": {
+                    "type": "object",
+                    "allOf": [
+                        {
+                            "$ref": "#/$defination/baseFormat"
+                        }
+                    ],
+                    "properties": {
+                        "maxLength": {
+                            "type": "integer"
+                        },
+                        "overFlow": {
+                            "type": "string",
+                            "enum": [
+                                "shrink-to-fit",
+                                "wrap",
+                                "truncate"
+                            ],
+                            "default": "shrink-to-fit"
+                        },
+                        "minFontSize": {
+                            "type": "integer",
+                            "default": 6
+                        },
+                        "lineHeight": {
+                            "type": "number"
+                        },
+                        "maxLines": {
+                            "type": "integer"
+                        },
+                        "decimalPlaces": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 2
+                        },
+                        "negativeStyle": {
+                            "type": "string",
+                            "enum": [
+                                "minus",
+                                "parantheses",
+                                "red"
+                            ],
+                            "default": "parantheses"
+                        },
+                        "thousandSeparator": {
+                            "type": "boolean",
+                            "default": true
+                        },
+                        "showCurrencySymbol": {
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "pattern": {
+                            "type": "string",
+                            "description": "Pattern for the date eg: DD/MM/YYYY"
+                        },
+                        "markGlyph": {
+                            "type": "string",
+                            "default": "X"
+                        },
+                        "markFontSize": {
+                            "type": "number"
+                        },
+                        "cellCount": {
+                            "type": "number"
+                        },
+                        "cellWidth": {
+                            "type": "number"
+                        },
+                        "cellGap": {
+                            "type": "number"
+                        },
+                        "direction": {
+                            "type": "string",
+                            "enum": [
+                                "ltr",
+                                "rtl"
+                            ],
+                            "default": "ltr"
+                        },
+                        "maskAllButLast4": {
+                            "type": "boolean",
+                            "default": false
+                        }
+                    }
+                },
+                "dataBinding": {
+                    "$ref": "#/$defination/dataBinding"
+                },
+                "validation": {
+                    "$ref": "#/$defination/validation"
+                }
+            }
+        },
+        "repeatingColumn": {
+            "type": "object",
+            "required": [
+                "id",
+                "x",
+                "width",
+                "type",
+                "field"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "x": {
+                    "type": "number"
+                },
+                "width": {
+                    "type": "number"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "field": {
+                    "type": "string",
+                    "description": "Relative JSON path or computed expresion per array element"
+                },
+                "transform":{
+                    "type":"string",
+                    "enum":["sum","count","boolToYesNo","lastN:4","none"],
+                    "default":"none",
+                    "description":"Applied to array field resolves to within the rows"
+                },
+                "format": {
+                    "$ref": "#/$defination/baseFormat"
+                }
+            }
+        },
+        "repeatingFieldGroup": {
+            "type": "object",
+            "required": [
+                "id",
+                "sourcePath",
+                "page",
+                "rowHeight",
+                "startY",
+                "maxRowPerPage",
+                "columns"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "sourcePath": {
+                    "type": "string",
+                    "description": "JSON path resolving to an array"
+                },
+                "page": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "rowHeight": {
+                    "type": "number"
+                },
+                "startY": {
+                    "type": "number"
+                },
+                "maxRowPerPage": {
+                    "type": "integer"
+                },
+                "overFlowPage": {
+                    "type": "string",
+                    "description": "formId+page refrence for a continous sheet"
+                },
+                "columns": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defination/repeatingColumn"
+                    }
+                }
+            }
+        }
+    }
+}

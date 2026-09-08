@@ -1,0 +1,176 @@
+{
+  "taxpayerData": {
+    "filingStatus": "MFJ",
+    "taxpayer": {
+      "firstName": "Alex",
+      "lastName": "Rivera",
+      "ssn": "123-45-6789"
+    },
+    "spouse": {
+      "firstName": "Jordan",
+      "lastName": "Rivera",
+      "ssn": "987-65-4321"
+    },
+    "dependents": [
+      { "firstName": "Sam", "lastName": "Rivera", "ssn": "111-22-3333", "relationship": "Son" },
+      { "firstName": "Robin", "lastName": "Rivera", "ssn": "444-55-6666", "relationship": "Daughter" }
+    ],
+    "income": {
+      "w2": [
+        { "employer": { "name": "Acme Corp", "ein": "12-3456789" }, "box1Wages": 82500.00 },
+        { "employer": { "name": "Beta LLC", "ein": "98-7654321" }, "box1Wages": 14250.50 }
+      ],
+      "interest": [
+        { "payer": "First National Bank", "amount": 312.44 }
+      ]
+    },
+    "investments": {
+      "capitalGainTransactions": [
+        { "description": "100 sh ACME Inc", "dateAcquired": "2022-03-01", "dateSold": "2024-06-15", "proceeds": 5400.00, "costBasis": 4100.00 },
+        { "description": "50 sh Beta LLC",  "dateAcquired": "2023-01-10", "dateSold": "2024-11-02", "proceeds": 1200.00, "costBasis": 1550.00 }
+      ]
+    }
+  },
+
+  "formAnnotationSet": {
+    "formId": "f1040",
+    "taxYear": 2024,
+    "revision": "2024-01",
+    "units": "pt",
+    "pages": [
+      { "pageNumber": 1, "width": 612, "height": 792 }
+    ],
+    "fields": [
+      {
+        "id": "f1040_taxpayer_name",
+        "label": "Taxpayer first name and last name",
+        "lineRef": "Name field",
+        "page": 1,
+        "position": { "x": 54, "y": 96, "width": 260, "height": 14 },
+        "anchor": "bottom-left",
+        "type": "text",
+        "format": { "fontFamily": "Helvetica", "fontSize": 10, "align": "left", "overflow": "shrink-to-fit", "minFontSize": 7 },
+        "dataBinding": { "path": "$.taxpayer.firstName + ' ' + $.taxpayer.lastName" },
+        "validation": { "required": true }
+      },
+      {
+        "id": "f1040_taxpayer_ssn",
+        "label": "Taxpayer SSN",
+        "lineRef": "SSN field",
+        "page": 1,
+        "position": { "x": 480, "y": 96, "width": 90, "height": 14 },
+        "type": "ssn",
+        "format": { "cellCount": 9, "cellWidth": 9, "cellGap": 1.5, "fontFamily": "Courier", "fontSize": 10 },
+        "dataBinding": { "path": "$.taxpayer.ssn" },
+        "validation": { "required": true, "pattern": "^\\d{3}-\\d{2}-\\d{4}$" }
+      },
+      {
+        "id": "f1040_spouse_ssn",
+        "label": "Spouse SSN (only if filing jointly or separately)",
+        "lineRef": "SSN field (spouse)",
+        "page": 1,
+        "position": { "x": 480, "y": 112, "width": 90, "height": 14 },
+        "type": "ssn",
+        "format": { "cellCount": 9, "cellWidth": 9, "cellGap": 1.5, "fontFamily": "Courier", "fontSize": 10 },
+        "dataBinding": {
+          "path": "$.spouse.ssn",
+          "condition": "$.filingStatus == 'MFJ' || $.filingStatus == 'MFS'"
+        }
+      },
+      {
+        "id": "f1040_status_mfj_checkbox",
+        "label": "Filing status checkbox: Married filing jointly",
+        "lineRef": "Filing Status",
+        "page": 1,
+        "position": { "x": 138, "y": 128, "width": 9, "height": 9 },
+        "type": "checkbox",
+        "format": { "markGlyph": "X", "markFontSize": 9 },
+        "dataBinding": {
+          "path": "$.filingStatus",
+          "transform": "none",
+          "condition": "$.filingStatus == 'MFJ'"
+        }
+      },
+      {
+        "id": "f1040_dependent_1_name",
+        "label": "Dependent 1 name",
+        "lineRef": "Dependents line, row 1",
+        "page": 1,
+        "position": { "x": 60, "y": 210, "width": 150, "height": 12 },
+        "type": "text",
+        "format": { "fontSize": 9 },
+        "dataBinding": { "path": "$.dependents[0].firstName + ' ' + $.dependents[0].lastName", "fallback": "" }
+      },
+      {
+        "id": "f1040_dependent_1_ssn",
+        "label": "Dependent 1 SSN",
+        "lineRef": "Dependents line, row 1",
+        "page": 1,
+        "position": { "x": 220, "y": 210, "width": 80, "height": 12 },
+        "type": "ssn",
+        "format": { "cellCount": 9, "cellWidth": 7 },
+        "dataBinding": { "path": "$.dependents[0].ssn", "fallback": "" }
+      },
+      {
+        "id": "f1040_line1a_wages",
+        "label": "Line 1a: Total amount from Form(s) W-2, box 1",
+        "lineRef": "Line 1a",
+        "page": 1,
+        "position": { "x": 452, "y": 300, "width": 90, "height": 14 },
+        "anchor": "bottom-left",
+        "type": "currency",
+        "format": { "decimalPlaces": 2, "negativeStyle": "parentheses", "thousandsSeparator": true, "align": "right", "fontFamily": "Courier", "fontSize": 10 },
+        "dataBinding": {
+          "path": "$.income.w2[*].box1Wages",
+          "transform": "sum",
+          "fallback": 0
+        }
+      },
+      {
+        "id": "f1040_line2b_interest",
+        "label": "Line 2b: Taxable interest",
+        "lineRef": "Line 2b",
+        "page": 1,
+        "position": { "x": 452, "y": 330, "width": 90, "height": 14 },
+        "type": "currency",
+        "format": { "decimalPlaces": 2, "align": "right", "fontFamily": "Courier", "fontSize": 10 },
+        "dataBinding": {
+          "path": "$.income.interest[*].amount",
+          "transform": "sum",
+          "fallback": 0
+        }
+      },
+      {
+        "id": "f1040_line9_total_income",
+        "label": "Line 9: Total income",
+        "lineRef": "Line 9",
+        "page": 1,
+        "position": { "x": 452, "y": 420, "width": 90, "height": 14 },
+        "type": "computed",
+        "format": { "decimalPlaces": 2, "align": "right", "fontFamily": "Courier", "fontSize": 10, "negativeStyle": "parentheses" },
+        "dataBinding": {
+          "computeExpression": "sum(f1040_line1a_wages, f1040_line2b_interest)"
+        }
+      }
+    ],
+    "repeatingGroups": [
+      {
+        "id": "sch_d_transactions",
+        "sourcePath": "$.investments.capitalGainTransactions[*]",
+        "page": 1,
+        "rowHeight": 14.5,
+        "startY": 500,
+        "maxRowsPerPage": 14,
+        "overflowPage": "sch-d#continuation",
+        "columns": [
+          { "id": "description",  "x": 60,  "width": 180, "type": "text",     "field": "description" },
+          { "id": "dateAcquired", "x": 245, "width": 60,  "type": "date",     "field": "dateAcquired", "format": { "fontFamily": "Helvetica", "fontSize": 9 } },
+          { "id": "dateSold",     "x": 310, "width": 60,  "type": "date",     "field": "dateSold" },
+          { "id": "proceeds",     "x": 375, "width": 70,  "type": "currency", "field": "proceeds" },
+          { "id": "costBasis",    "x": 450, "width": 70,  "type": "currency", "field": "costBasis" },
+          { "id": "gainLoss",     "x": 525, "width": 70,  "type": "currency", "field": "computed:proceeds-costBasis" }
+        ]
+      }
+    ]
+  }
+}

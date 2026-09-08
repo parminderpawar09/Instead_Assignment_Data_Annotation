@@ -1,0 +1,2 @@
+jsonpath-ng==1.8.0
+reportlab==4.4.10
