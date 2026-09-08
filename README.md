@@ -41,3 +41,9 @@ The result: an annotation file is pure, auditable data — no embedded code — 
 - **Multi-form cross-references.** A field on one form (e.g. 1040) that must equal an already-resolved value on another form (e.g. "Schedule 1, Line 10") — `dataBinding.path` could optionally address another form's resolved output, not just the raw dataset.
 - **Localized formatting.** Puerto Rico / bilingual forms would need a `locale` property feeding into date and number formatting.
 - **Annotation diffing/versioning tool.** IRS forms shift box positions slightly year over year; a utility to diff two `taxYear` annotation sets for the same `formId` and flag moved/removed boxes would reduce annual maintenance risk.
+
+## Running the Implementation
+- **Step 1**: Make sure python version 3.12 onwards is installed in the system
+- **Step 2**: Open cmd and install the pacakges using command "pip install -r requirements.txt"
+- **Step 3**: To convert the schema to a printable pdf use command "python implementation.py schema_file_name.json"
+- **Step 4**: Visualise the Pdf along with the drawing instruction in the cmd
